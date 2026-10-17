@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   Bell,
   CalendarDays,
@@ -30,6 +30,9 @@ const MOCK_NOTIFICATIONS = [
 
 export default function MainLayout() {
   const { semester, setSemester, habits, logHabit } = useApp();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
   const [unread, setUnread] = useState(MOCK_NOTIFICATIONS.length);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState(false);
@@ -199,7 +202,7 @@ export default function MainLayout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 md:px-6">
+      <main className={isHome ? '' : 'mx-auto max-w-7xl px-4 py-6 md:px-6'}>
         <Outlet />
       </main>
 
