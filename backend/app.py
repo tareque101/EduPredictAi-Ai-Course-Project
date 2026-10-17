@@ -1,11 +1,14 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
+from activities import bp as activities_bp
 from auth import bp as auth_bp
 from config import Config
 from extensions import db
 from habits import bp as habits_bp
+from health_logs import bp as health_logs_bp
 from ml_api import bp as ml_bp
+from skills import bp as skills_bp
 
 
 def create_app(config_class=Config):
@@ -17,6 +20,9 @@ def create_app(config_class=Config):
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(habits_bp)
+    app.register_blueprint(activities_bp)
+    app.register_blueprint(skills_bp)
+    app.register_blueprint(health_logs_bp)
     app.register_blueprint(ml_bp)
 
     with app.app_context():

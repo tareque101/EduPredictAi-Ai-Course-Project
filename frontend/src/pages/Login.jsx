@@ -11,7 +11,9 @@ export default function Login() {
   const { user, login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mode, setMode] = useState('login');
+
+  // Navbar-er "Sign up" button theke asle Sign up tab khule thakbe
+  const [mode, setMode] = useState(location.state?.mode === 'register' ? 'register' : 'login');
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -20,6 +22,11 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || '/dashboard';
   const isLogin = mode === 'login';
+
+  const switchMode = (next) => {
+    setMode(next);
+    setError('');
+  };
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -56,14 +63,14 @@ export default function Login() {
         <div className="mt-6 grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1 text-sm font-medium">
           <button
             type="button"
-            onClick={() => setMode('login')}
+            onClick={() => switchMode('login')}
             className={`rounded-md py-2 ${isLogin ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500'}`}
           >
             Log in
           </button>
           <button
             type="button"
-            onClick={() => setMode('register')}
+            onClick={() => switchMode('register')}
             className={`rounded-md py-2 ${!isLogin ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500'}`}
           >
             Sign up

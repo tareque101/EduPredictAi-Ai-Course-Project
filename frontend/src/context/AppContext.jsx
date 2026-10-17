@@ -1,102 +1,77 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import * as api from '../api/client.js';
+import { useAuth } from './AuthContext.jsx';
 
-export const SEMESTERS = ['Fall 2026', 'Spring 2026', 'Summer 2026'];
-
-const HABIT_COLORS = ['#6366f1', '#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
-
-const todayKey = () => new Date().toISOString().slice(0, 10);
-const nowLabel = () =>
-  new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-const round2 = (n) => Math.round(n * 100) / 100;
-
-const INITIAL_HABITS = [
-  { id: 1, name: 'Deep Study', category: 'Study', goal: 'at-least', unit: 'hrs', target: 4, current: 3.2, step: 0.5, streak: 14, lastLogged: null, color: '#6366f1' },
-  { id: 2, name: 'Sleep', category: 'Recovery', goal: 'at-least', unit: 'hrs', target: 7.5, current: 6.5, step: 0.5, streak: 5, lastLogged: null, color: '#06b6d4' },
-  { id: 3, name: 'Compiler Design Revision', category: 'Study', goal: 'at-least', unit: 'hrs', target: 1.5, current: 1.5, step: 0.5, streak: 9, lastLogged: null, color: '#8b5cf6' },
-  { id: 4, name: 'Exercise', category: 'Health', goal: 'at-least', unit: 'min', target: 30, current: 15, step: 15, streak: 3, lastLogged: null, color: '#10b981' },
-  { id: 5, name: 'Social Media / Leisure', category: 'Lifestyle', goal: 'at-most', unit: 'hrs', target: 2, current: 2.5, step: 0.5, streak: 0, lastLogged: null, color: '#f59e0b' },
-];
-
-const INITIAL_ACTIVITY = [
-  { id: 1, text: 'Logged 3.2 hrs of Deep Study', time: 'Today, 08:40 AM', dot: 'bg-indigo-500' },
-  { id: 2, text: 'Logged 6.5 hrs of Sleep', time: 'Yesterday, 11:15 PM', dot: 'bg-cyan-500' },
-  { id: 3, text: 'Completed Compiler Design revision', time: 'Yesterday, 04:20 PM', dot: 'bg-violet-500' },
-  { id: 4, text: 'Missed Exercise target', time: 'Oct 14, 07:05 PM', dot: 'bg-rose-500' },
-  { id: 5, text: 'Attendance recorded at 88%', time: 'Oct 13, 09:00 AM', dot: 'bg-emerald-500' },
-];
+// Date theke current semester bar kore: Jan-May = Spring, Jun-Aug = Summer, Sep-Dec = Fall
+export function getCurrentSemester(date = new Date()) {
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  if (month >= 1 && month <= 5) return `Spring ${year}`;
+  if (month >= 6 && month <= 8) return `Summer ${year}`;
+  return `Fall ${year}`;
+}
 
 const AppContext = createContext(null);
+const timeLabel = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 export function AppProvider({ children }) {
-  const [semester, setSemester] = useState(SEMESTERS[0]);
-  const [habits, setHabits] = useState(INITIAL_HABITS);
-  const [activity, setActivity] = useState(INITIAL_ACTIVITY);
+  const { user } = useAuth();
+  const semester = getCurrentSemester();
+
+  const [habits, setHabits] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [cgpa] = useState(3.42);
   const [attendance] = useState(88);
 
+  useEffect(() => {
+    if (!user) {
+      setHabits([]);
+      return;
+    }
+    api.fetchHabits().then(setHabits).catch((err) => console.error('Load habits failed', err));
+  }, [user]);
+
   const pushActivity = useCallback((text, dot) => {
-    setActivity((prev) => [
-      { id: Date.now(), text, time: `Today, ${nowLabel()}`, dot },
-      ...prev,
-    ]);
+    setActivity((prev) => [{ id: Date.now(), text, time: `Today, ${timeLabel()}`, dot }, ...prev].slice(0, 20));
   }, []);
 
   const logHabit = useCallback(
-    (id) => {
-      const habit = habits.find((h) => h.id === id);
-      if (!habit) return;
-      const today = todayKey();
-      const firstLogToday = habit.lastLogged !== today;
-
-      setHabits((prev) =>
-        prev.map((h) =>
-          h.id === id
-            ? {
-                ...h,
-                current: round2(h.current + h.step),
-                streak: firstLogToday ? h.streak + 1 : h.streak,
-                lastLogged: today,
-              }
-            : h
-        )
-      );
-      pushActivity(`Logged ${habit.step} ${habit.unit} of ${habit.name}`, 'bg-emerald-500');
+    async (id) => {
+      try {
+        const updated = await api.logHabit(id);
+        setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+        pushActivity(`Logged ${updated.step} ${updated.unit} of ${updated.name}`, 'bg-emerald-500');
+      } catch (err) {
+        console.error('Log failed', err);
+      }
     },
-    [habits, pushActivity]
+    [pushActivity]
   );
 
   const addHabit = useCallback(
-    (payload) => {
-      const newHabit = {
-        id: Date.now(),
-        ...payload,
-        current: 0,
-        streak: 0,
-        lastLogged: null,
-        color: HABIT_COLORS[habits.length % HABIT_COLORS.length],
-      };
-      setHabits((prev) => [...prev, newHabit]);
-      pushActivity(`Created new habit: ${payload.name}`, 'bg-indigo-500');
+    async (payload) => {
+      try {
+        const created = await api.createHabit(payload);
+        setHabits((prev) => [...prev, created]);
+        pushActivity(`Created new habit: ${created.name}`, 'bg-indigo-500');
+      } catch (err) {
+        console.error('Create failed', err);
+      }
     },
-    [habits.length, pushActivity]
+    [pushActivity]
   );
 
-  const removeHabit = useCallback((id) => {
-    setHabits((prev) => prev.filter((h) => h.id !== id));
+  const removeHabit = useCallback(async (id) => {
+    try {
+      await api.deleteHabit(id);
+      setHabits((prev) => prev.filter((h) => h.id !== id));
+    } catch (err) {
+      console.error('Delete failed', err);
+    }
   }, []);
 
   const value = useMemo(
-    () => ({
-      semester,
-      setSemester,
-      habits,
-      addHabit,
-      logHabit,
-      removeHabit,
-      activity,
-      cgpa,
-      attendance,
-    }),
+    () => ({ semester, habits, addHabit, logHabit, removeHabit, activity, cgpa, attendance }),
     [semester, habits, addHabit, logHabit, removeHabit, activity, cgpa, attendance]
   );
 
