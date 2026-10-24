@@ -59,7 +59,16 @@ export const deleteHealthLog = async (id) => {
 };
 
 // ML
-export const predictCgpa = async (payload) => (await api.post('/predict', payload)).data;
+const NUMERIC_KEYS = ['age', 'attendancePct', 'studyHours', 'previousCgpa', 'sleepHours', 'socialHours'];
+
+export const predictCgpa = async (form) => {
+  const payload = { ...form };
+  for (const key of NUMERIC_KEYS) {
+    payload[key] = Number(payload[key]);
+  }
+  return (await api.post('/predict', payload)).data;
+};
+
 export const sendChatMessage = async (message, history = []) =>
   (await api.post('/chat', { message, history })).data;
 export const fetchModelInfo = async () => (await api.get('/model-info')).data;

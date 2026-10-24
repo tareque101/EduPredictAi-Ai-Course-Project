@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import MyHabits from './pages/MyHabits.jsx';
 import Analytics from './pages/Analytics.jsx';
 import Profile from './pages/Profile.jsx';
+import CgpaPredictor from './pages/CgpaPredictor.jsx';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="habits" element={<MyHabits />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="predict" element={<CgpaPredictor />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
