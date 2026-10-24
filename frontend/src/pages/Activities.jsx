@@ -14,8 +14,12 @@ const EMPTY = {
   certificate_url: '',
   notes: '',
 };
+
 const INPUT =
-  'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100';
+  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100';
+const LABEL = 'mb-1.5 block text-xs font-semibold uppercase text-slate-500';
+const CARD = 'rounded-2xl border border-slate-200 bg-white p-6';
+const ITEM = 'rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-md';
 
 const CATEGORY_STYLE = {
   Academic: 'bg-blue-50 text-blue-700 ring-blue-200',
@@ -27,11 +31,13 @@ const CATEGORY_STYLE = {
 };
 
 const formatDate = (d) =>
-  d ? new Date(`${d}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  d
+    ? new Date(`${d}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : '';
 
 function StatCard({ icon: Icon, label, value, accent }) {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <span className={`inline-flex rounded-xl p-2 ${accent}`}>
         <Icon className="h-5 w-5" />
       </span>
@@ -85,7 +91,9 @@ export default function Activities() {
 
   const stats = useMemo(() => {
     const totalHours = items.reduce((sum, i) => sum + (i.hours || 0), 0);
-    const leadership = items.filter((i) => /lead|coordinator|president|secretary|captain|head/i.test(i.role || '')).length;
+    const leadership = items.filter((i) =>
+      /lead|coordinator|president|secretary|captain|head/i.test(i.role || '')
+    ).length;
     const categories = new Set(items.map((i) => i.category)).size;
     return { count: items.length, totalHours: Math.round(totalHours * 10) / 10, leadership, categories };
   }, [items]);
@@ -96,83 +104,138 @@ export default function Activities() {
     <div className="space-y-8 pb-10">
       <header>
         <h1 className="text-2xl font-bold text-slate-900">My Extra-Curricular Activities</h1>
-        <p className="text-sm text-slate-500">Clubs, events, competitions and volunteering, all in one place.</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Clubs, events, competitions and volunteering, all in one place.
+        </p>
       </header>
 
+      {/* Stats */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={Award} label="Activities" value={stats.count} accent="bg-indigo-50 text-indigo-600" />
         <StatCard icon={Clock} label="Total hours" value={stats.totalHours} accent="bg-cyan-50 text-cyan-600" />
         <StatCard icon={Users} label="Leadership roles" value={stats.leadership} accent="bg-emerald-50 text-emerald-600" />
-        <StatCard icon={Trophy} label="Categories covered" value={`${stats.categories}/${CATEGORIES.length}`} accent="bg-amber-50 text-amber-600" />
+        <StatCard
+          icon={Trophy}
+          label="Categories covered"
+          value={`${stats.categories}/${CATEGORIES.length}`}
+          accent="bg-amber-50 text-amber-600"
+        />
       </section>
 
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <Plus className="h-5 w-5 text-indigo-500" /> Add an activity
+      {/* Add form */}
+      <section className={CARD}>
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+          <Plus className="h-5 w-5 text-indigo-600" /> Add a New Activity
         </h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Title</label>
-            <input name="title" value={form.title} onChange={handleChange} required placeholder="e.g. Annual Tech Fest" className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Category</label>
-            <select name="category" value={form.category} onChange={handleChange} className={INPUT}>
-              {CATEGORIES.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Organisation</label>
-            <input name="organisation" value={form.organisation} onChange={handleChange} placeholder="e.g. CSE Club" className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Your role</label>
-            <input name="role" value={form.role} onChange={handleChange} placeholder="e.g. Coordinator" className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Hours contributed</label>
-            <input name="hours" type="number" min="0" step="0.5" value={form.hours} onChange={handleChange} placeholder="e.g. 12" className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Start date</label>
-            <input name="start_date" type="date" value={form.start_date} onChange={handleChange} required className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">End date (optional)</label>
-            <input name="end_date" type="date" value={form.end_date} onChange={handleChange} className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Certificate link (optional)</label>
-            <input name="certificate_url" value={form.certificate_url} onChange={handleChange} placeholder="https://..." className={INPUT} />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Notes (optional)</label>
-            <input name="notes" value={form.notes} onChange={handleChange} placeholder="Achievement, outcome..." className={INPUT} />
+
+        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <label className={LABEL}>Title</label>
+              <input
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Annual Tech Fest"
+                className={INPUT}
+              />
+            </div>
+            <div>
+              <label className={LABEL}>Category</label>
+              <select name="category" value={form.category} onChange={handleChange} className={INPUT}>
+                {CATEGORIES.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={LABEL}>Organisation</label>
+              <input
+                name="organisation"
+                value={form.organisation}
+                onChange={handleChange}
+                placeholder="e.g. CSE Club"
+                className={INPUT}
+              />
+            </div>
+            <div>
+              <label className={LABEL}>Your role</label>
+              <input
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                placeholder="e.g. Coordinator"
+                className={INPUT}
+              />
+            </div>
+            <div>
+              <label className={LABEL}>Hours contributed</label>
+              <input
+                name="hours"
+                type="number"
+                min="0"
+                step="0.5"
+                value={form.hours}
+                onChange={handleChange}
+                placeholder="e.g. 12"
+                className={INPUT}
+              />
+            </div>
+            <div>
+              <label className={LABEL}>Start date</label>
+              <input name="start_date" type="date" value={form.start_date} onChange={handleChange} required className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>End date (optional)</label>
+              <input name="end_date" type="date" value={form.end_date} onChange={handleChange} className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Certificate link (optional)</label>
+              <input
+                name="certificate_url"
+                value={form.certificate_url}
+                onChange={handleChange}
+                placeholder="https://..."
+                className={INPUT}
+              />
+            </div>
+            <div>
+              <label className={LABEL}>Notes (optional)</label>
+              <input
+                name="notes"
+                value={form.notes}
+                onChange={handleChange}
+                placeholder="Achievement, outcome..."
+                className={INPUT}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col justify-end md:col-span-3">
+          <div className="flex flex-col">
             {error && <p className="mb-2 text-sm text-rose-600">{error}</p>}
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 self-start rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 self-start rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save activity
+              Save Activity
             </button>
           </div>
         </form>
       </section>
 
+      {/* Filters */}
       <section className="flex flex-wrap gap-2">
         {['All', ...CATEGORIES].map((c) => (
           <button
             key={c}
             onClick={() => setFilter(c)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition ${
-              filter === c ? 'bg-slate-900 text-white ring-slate-900' : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+              filter === c
+                ? 'bg-indigo-600 text-white'
+                : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
             }`}
           >
             {c}
@@ -180,49 +243,64 @@ export default function Activities() {
         ))}
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      {/* List */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-slate-900">My Activities</h2>
         {loading && <p className="text-sm text-slate-500">Loading...</p>}
         {!loading && visible.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500 md:col-span-2">
+          <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
             No activities yet. Add your first club, event or volunteering role above.
           </div>
         )}
-        {visible.map((a) => (
-          <article key={a.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${CATEGORY_STYLE[a.category] || CATEGORY_STYLE.Other}`}>
-                  {a.category}
-                </span>
-                <h3 className="mt-2 truncate text-base font-semibold text-slate-900">{a.title}</h3>
-                <p className="truncate text-sm text-slate-500">
-                  {[a.organisation, a.role].filter(Boolean).join(' · ') || 'No organisation given'}
-                </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          {visible.map((a) => (
+            <article key={a.id} className={ITEM}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span
+                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                      CATEGORY_STYLE[a.category] || CATEGORY_STYLE.Other
+                    }`}
+                  >
+                    {a.category}
+                  </span>
+                  <h3 className="mt-2 truncate text-base font-semibold text-slate-900">{a.title}</h3>
+                  <p className="truncate text-sm text-slate-500">
+                    {[a.organisation, a.role].filter(Boolean).join(' · ') || 'No organisation given'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDelete(a.id)}
+                  className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  aria-label={`Delete ${a.title}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => handleDelete(a.id)}
-                className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                aria-label={`Delete ${a.title}`}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
-              <span className="font-semibold text-slate-700">{a.hours} hrs</span>
-              <span>
-                {formatDate(a.start_date)}
-                {a.end_date ? ` – ${formatDate(a.end_date)}` : ''}
-              </span>
-              {a.certificate_url && (
-                <a href={a.certificate_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 hover:underline">
-                  Certificate <ExternalLink className="h-3 w-3" />
-                </a>
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
+                <span className="font-semibold text-slate-700">{a.hours} hrs</span>
+                <span>
+                  {formatDate(a.start_date)}
+                  {a.end_date ? ` – ${formatDate(a.end_date)}` : ''}
+                </span>
+                {a.certificate_url && (
+                  <a
+                    href={a.certificate_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-indigo-600 hover:underline"
+                  >
+                    Certificate <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+              {a.notes && (
+                <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{a.notes}</p>
               )}
-            </div>
-            {a.notes && <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{a.notes}</p>}
-          </article>
-        ))}
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   );

@@ -76,16 +76,16 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
-                to="/login"
+                to="/predict"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:scale-[1.02] hover:shadow-indigo-500/50"
               >
-                Open Dashboard <ArrowRight className="h-4 w-4" />
+                <BrainCircuit className="h-4 w-4" /> Predict CGPA
               </Link>
               <Link
-                to="/how-it-works"
+                to="/login"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white backdrop-blur transition hover:bg-white/10"
               >
-                How it works
+                Open Dashboard <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -215,14 +215,14 @@ export default function Home() {
         <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-600 p-10 text-center text-white shadow-2xl sm:p-14">
           <h2 className="text-3xl font-bold sm:text-4xl">Ready to see your estimate?</h2>
           <p className="mx-auto mt-4 max-w-xl text-indigo-100">
-            Log in, add your habits and use the simulator to see where to focus.
+            Try the CGPA predictor, or log in and add your habits to see where to focus.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
-              to="/login"
+              to="/predict"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-indigo-700 shadow-lg transition hover:scale-[1.02]"
             >
-              Get Started <ArrowRight className="h-4 w-4" />
+              Predict CGPA <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/habits"

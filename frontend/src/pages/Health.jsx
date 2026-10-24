@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, Droplets, Dumbbell, Info, Loader2, Moon, Smile, Trash2 } from 'lucide-react';
+import { Activity, Droplets, Dumbbell, Info, Loader2, Moon, Plus, Smile, Trash2 } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { deleteHealthLog, fetchHealthLogs, saveHealthLog } from '../api/client.js';
 
@@ -20,17 +20,20 @@ const emptyForm = () => ({
   exercise_min: '',
   notes: '',
 });
+
 const INPUT =
-  'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100';
+  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100';
+const LABEL = 'mb-1.5 block text-xs font-semibold uppercase text-slate-500';
+const CARD = 'rounded-2xl border border-slate-200 bg-white p-6';
 
 function Slider({ label, icon: Icon, value, onChange, lowLabel, highLabel }) {
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="flex items-center gap-2 font-medium text-slate-700">
-          <Icon className="h-4 w-4 text-rose-500" /> {label}
+      <div className="mb-2 flex items-center justify-between">
+        <span className="flex items-center gap-2 text-xs font-semibold uppercase text-slate-500">
+          <Icon className="h-4 w-4 text-indigo-600" /> {label}
         </span>
-        <span className="font-semibold text-rose-600">{value} / 5</span>
+        <span className="text-sm font-semibold text-indigo-600">{value} / 5</span>
       </div>
       <input
         type="range"
@@ -39,7 +42,7 @@ function Slider({ label, icon: Icon, value, onChange, lowLabel, highLabel }) {
         step={1}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-rose-500"
+        className="w-full accent-indigo-600"
       />
       <div className="mt-1 flex justify-between text-[11px] text-slate-400">
         <span>{lowLabel}</span>
@@ -51,7 +54,7 @@ function Slider({ label, icon: Icon, value, onChange, lowLabel, highLabel }) {
 
 function StatCard({ icon: Icon, label, value, sub, accent }) {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-rose-100">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <span className={`inline-flex rounded-xl p-2 ${accent}`}>
         <Icon className="h-5 w-5" />
       </span>
@@ -161,7 +164,9 @@ export default function Health() {
     <div className="space-y-8 pb-10">
       <header>
         <h1 className="text-2xl font-bold text-slate-900">My Health</h1>
-        <p className="text-sm text-slate-500">Daily wellbeing check-ins: sleep, mood, stress, water and movement.</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Track daily wellbeing: sleep, mood, stress, water and movement.
+        </p>
       </header>
 
       <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -180,13 +185,13 @@ export default function Health() {
         <StatCard icon={Droplets} label="Avg water" value={`${Math.round(weekStats.water)} ml`} accent="bg-cyan-50 text-cyan-600" />
       </section>
 
-      {/* Gentle nudge */}
-      <div className="rounded-2xl bg-gradient-to-r from-rose-50 to-violet-50 p-5 text-sm text-slate-700 ring-1 ring-rose-100">
+      {/* Nudge */}
+      <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5 text-sm text-slate-700">
         {nudge}
       </div>
 
       {/* Trend chart */}
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-rose-100">
+      <section className={CARD}>
         <h2 className="text-lg font-semibold text-slate-900">Mood and stress trend</h2>
         <p className="mb-4 text-sm text-slate-500">Last 14 check-ins (1 = low, 5 = high).</p>
         {chartData.length < 2 ? (
@@ -209,51 +214,50 @@ export default function Health() {
       </section>
 
       {/* Check-in form */}
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-rose-100">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">Daily check-in</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-5">
+      <section className={CARD}>
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+          <Plus className="h-5 w-5 text-indigo-600" /> Add a Daily Check-in
+        </h2>
+
+        <form onSubmit={handleSubmit} className="mt-5 space-y-6">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Date</label>
+              <label className={LABEL}>Date</label>
               <input name="log_date" type="date" value={form.log_date} onChange={handleChange} required className={INPUT} />
-              <p className="mt-1 text-xs text-slate-400">Saving again on the same date updates that day.</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Sleep (hrs)</label>
-                <input name="sleep_hours" type="number" min="0" max="24" step="0.5" value={form.sleep_hours} onChange={handleChange} placeholder="e.g. 7" className={INPUT} />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Water (ml)</label>
-                <input name="water_ml" type="number" min="0" step="100" value={form.water_ml} onChange={handleChange} placeholder="e.g. 2000" className={INPUT} />
-              </div>
-              <div className="col-span-2">
-                <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Exercise / walking (min)</label>
-                <input name="exercise_min" type="number" min="0" step="5" value={form.exercise_min} onChange={handleChange} placeholder="e.g. 30" className={INPUT} />
-              </div>
+            <div>
+              <label className={LABEL}>Sleep (hrs)</label>
+              <input name="sleep_hours" type="number" min="0" max="24" step="0.5" value={form.sleep_hours} onChange={handleChange} placeholder="e.g. 7" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Water (ml)</label>
+              <input name="water_ml" type="number" min="0" step="100" value={form.water_ml} onChange={handleChange} placeholder="e.g. 2000" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Exercise (min)</label>
+              <input name="exercise_min" type="number" min="0" step="5" value={form.exercise_min} onChange={handleChange} placeholder="e.g. 30" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Notes</label>
+              <input name="notes" value={form.notes} onChange={handleChange} placeholder="Optional" className={INPUT} />
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <Slider label="Sleep quality" icon={Moon} value={form.sleep_quality} onChange={(v) => setForm((p) => ({ ...p, sleep_quality: v }))} lowLabel="Poor" highLabel="Great" />
             <Slider label="Mood" icon={Smile} value={form.mood} onChange={(v) => setForm((p) => ({ ...p, mood: v }))} lowLabel="Low" highLabel="Great" />
             <Slider label="Stress" icon={Activity} value={form.stress} onChange={(v) => setForm((p) => ({ ...p, stress: v }))} lowLabel="Calm" highLabel="Very stressed" />
           </div>
 
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-semibold uppercase text-slate-500">Notes (optional)</label>
-            <input name="notes" value={form.notes} onChange={handleChange} placeholder="Anything that affected your day" className={INPUT} />
-          </div>
-
-          <div className="flex flex-col md:col-span-2">
+          <div className="flex flex-col">
             {error && <p className="mb-2 text-sm text-rose-600">{error}</p>}
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 self-start rounded-lg bg-rose-500 px-5 py-2 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-60"
+              className="inline-flex items-center gap-2 self-start rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save check-in
+              Save Check-in
             </button>
           </div>
         </form>
@@ -265,7 +269,7 @@ export default function Health() {
         {loading && <p className="text-sm text-slate-500">Loading...</p>}
         {!loading && logs.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-            No check-ins yet. Save your first one above.
+            No check-ins yet. Add your first one above to start tracking.
           </div>
         )}
         <div className="grid gap-3 md:grid-cols-2">
@@ -273,7 +277,7 @@ export default function Health() {
             <article
               key={l.id}
               onClick={() => loadIntoForm(l)}
-              className="cursor-pointer rounded-2xl bg-white p-4 shadow-sm ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:shadow-md"
+              className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-slate-900">{shortDate(l.log_date)}</p>
