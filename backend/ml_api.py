@@ -2,8 +2,6 @@ import json
 import logging
 import math
 import os
-import time
-from datetime import datetime, timezone
 
 import joblib
 import numpy as np
@@ -141,43 +139,6 @@ def classify_risk(cgpa):
     return "High"
 
 
-CHAT_RESPONSES = {
-    "sleep": (
-        "Sleep is one of the strongest predictors of academic performance. "
-        "Aim for 7 to 8 hours and keep a consistent bedtime."
-    ),
-    "study": (
-        "Try a focused plan: 50 minutes of deep work followed by a 10-minute break. "
-        "Start with your hardest subject while your energy is highest."
-    ),
-    "exam": (
-        "For exam preparation, list the topics, rate your confidence in each, "
-        "then spend most of your time on the weakest ones."
-    ),
-    "cgpa": (
-        "To raise your CGPA, prioritise high-credit courses, attend classes consistently, "
-        "and keep your sleep stable during exam weeks."
-    ),
-    "attendance": "Set a reminder 15 minutes before each class and sit near the front to stay engaged.",
-    "plan": (
-        "A simple weekly plan: theory on Monday and Wednesday, problem solving on Tuesday "
-        "and Thursday, a mini-test on Friday, and review plus rest at the weekend."
-    ),
-}
-DEFAULT_REPLY = (
-    "I can help with study planning, sleep habits, exam preparation, attendance, "
-    "or improving your CGPA. What would you like to focus on?"
-)
-
-
-def mock_chat_reply(message):
-    lowered = message.lower()
-    for keyword, reply in CHAT_RESPONSES.items():
-        if keyword in lowered:
-            return reply
-    return DEFAULT_REPLY
-
-
 @bp.get("/health")
 def health():
     return jsonify(status="ok", modelLoaded=MODEL is not None)
@@ -209,16 +170,6 @@ def predict():
         source="model",
         inputs=values,
     )
-
-
-@bp.post("/chat")
-def chat():
-    payload = request.get_json(silent=True) or {}
-    message = str(payload.get("message", "")).strip()
-    if not message:
-        return jsonify(error="'message' is required."), 400
-    time.sleep(0.5)
-    return jsonify(reply=mock_chat_reply(message), timestamp=datetime.now(timezone.utc).isoformat())
 
 
 @bp.get("/model-info")

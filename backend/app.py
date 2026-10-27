@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 from activities import bp as activities_bp
 from auth import bp as auth_bp
+from chat import bp as chat_bp
 from config import Config
 from extensions import db
 from habits import bp as habits_bp
@@ -23,6 +24,7 @@ def create_app(config_class=Config):
     app.register_blueprint(activities_bp)
     app.register_blueprint(skills_bp)
     app.register_blueprint(health_logs_bp)
+    app.register_blueprint(chat_bp)
     app.register_blueprint(ml_bp)
 
     with app.app_context():
