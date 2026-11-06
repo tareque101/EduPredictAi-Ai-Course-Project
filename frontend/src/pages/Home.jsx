@@ -48,7 +48,7 @@ const STATS = [
   { value: '4', label: 'Habit factors in the model' },
   { value: '3', label: 'Regression models compared' },
   { value: '3', label: 'Risk levels: Low, Moderate, High' },
-  { value: 'R² + MAE', label: 'Published on How it works' },
+  { value: 'R² + MA', label: 'Published on How it works' },
 ];
 
 export default function Home() {
@@ -65,7 +65,7 @@ export default function Home() {
               <Sparkles className="h-3.5 w-3.5" /> Machine learning for students
             </span>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Predict your CGPA.
+              Track your student life.
               <span className="block bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
                 Build habits that win.
               </span>

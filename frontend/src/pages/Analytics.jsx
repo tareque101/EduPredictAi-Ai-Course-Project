@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, BookOpen, Moon, Users } from 'lucide-react';
+import { Activity, BookOpen, Moon, Users, CheckCircle, Award, Heart, Briefcase } from 'lucide-react';
 
 /* Deterministic pseudo-random generator so charts are stable across reloads. */
 function mulberry32(seed) {
@@ -84,6 +84,23 @@ function SummaryCard({ icon: Icon, label, value, hint, accent }) {
 }
 
 export default function Analytics() {
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetching real dynamic analytics data from backend API
+  useEffect(() => {
+    fetch('http://localhost:5000/api/analytics')
+      .then((res) => res.json())
+      .then((data) => {
+        setAnalyticsData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching analytics:', err);
+        setLoading(false);
+      });
+  }, []);
+
   const avgSleep = useMemo(
     () => SEMESTER_TREND.reduce((s, d) => s + d.sleep, 0) / SEMESTER_TREND.length,
     []
@@ -97,44 +114,50 @@ export default function Analytics() {
     return (top - you).toFixed(1);
   }, []);
 
+  // Dynamic values fallback to default if analyticsData is loading/null
+  const habitStreakVal = analyticsData ? `${analyticsData.habit_summary?.avg_streak || 0} Days` : '8 Days';
+  const ecaSkillsVal = analyticsData ? `${analyticsData.eca_summary?.active_activities || 0} Active` : '4 Active';
+  const healthSleepVal = analyticsData ? `${analyticsData.avg_sleep} hrs` : `${avgSleep.toFixed(1)} hrs`;
+  const totalSkillsVal = analyticsData ? `${analyticsData.skills_summary?.total_skills || 0} Skills` : 'Advanced Level';
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Analytics Deep Dive</h1>
         <p className="text-sm text-slate-500">
-          Explore how sleep, study, and attendance relate to your academic performance.
+          Comprehensive insights covering Dashboard, Habits, ECA, Skills, and Health metrics.
         </p>
       </div>
 
-      {/* Summary cards */}
+      {/* Summary cards including Dashboard, Habits, ECA, Skills, Health */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           icon={Activity}
           label="Latest CGPA"
           value={latestCgpa.toFixed(2)}
-          hint="Week 15 snapshot"
+          hint="Dashboard snapshot"
           accent="bg-indigo-50 text-indigo-600"
         />
         <SummaryCard
-          icon={Moon}
-          label="Avg Sleep"
-          value={`${avgSleep.toFixed(1)} hrs`}
-          hint="Across 15 weeks"
-          accent="bg-cyan-50 text-cyan-600"
-        />
-        <SummaryCard
-          icon={Users}
-          label="Attendance-Quiz r"
-          value={correlation.toFixed(2)}
-          hint={correlation > 0.5 ? 'Strong positive correlation' : 'Moderate correlation'}
+          icon={CheckCircle}
+          label="Habit Streak"
+          value={habitStreakVal}
+          hint="Habits consistency"
           accent="bg-emerald-50 text-emerald-600"
         />
         <SummaryCard
-          icon={BookOpen}
-          label="Study Gap to Top 10%"
-          value={`${studyGap} hrs/day`}
-          hint="Average difference across subjects"
-          accent="bg-violet-50 text-violet-600"
+          icon={Award}
+          label="ECA & Skills"
+          value={ecaSkillsVal}
+          hint="Clubs & Tech Skills"
+          accent="bg-amber-50 text-amber-600"
+        />
+        <SummaryCard
+          icon={Heart}
+          label="Avg Health / Sleep"
+          value={healthSleepVal}
+          hint="Health & Wellness log"
+          accent="bg-cyan-50 text-cyan-600"
         />
       </section>
 
@@ -198,6 +221,35 @@ export default function Analytics() {
           </div>
         </section>
       </div>
+
+      {/* Additional Section for Habits, ECA, Skills, & Health Breakdown */}
+      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <h2 className="text-lg font-semibold text-slate-900">Habits, ECA & Skills Summary Breakdown</h2>
+        <p className="mb-4 text-sm text-slate-500">Overview of your extracurricular participation and skill development progress.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-emerald-600" /> Habits Tracker
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">Consistency rate across daily study and sleep goals.</p>
+            <p className="text-xl font-bold text-slate-900 mt-3">{analyticsData ? `${analyticsData.habit_summary?.total_habits || 0} Habits Logged` : '85% Compliance'}</p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-amber-600" /> ECA & Activities
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">Cultural and club involvement hours logged.</p>
+            <p className="text-xl font-bold text-slate-900 mt-3">{analyticsData ? `${analyticsData.eca_summary?.hours_logged || 0} Total Hours` : '12 Hours / mo'}</p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+              <Award className="h-4 w-4 text-indigo-600" /> Skills Mastery
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">Technical skills proficiency growth.</p>
+            <p className="text-xl font-bold text-slate-900 mt-3">{analyticsData ? `${analyticsData.skills_summary?.total_skills || 0} Active Skills` : 'Advanced Level'}</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
