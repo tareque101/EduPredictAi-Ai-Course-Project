@@ -132,8 +132,31 @@ class HealthLog(db.Model):
     stress = db.Column(db.Integer, default=3)          # 1-5
     water_ml = db.Column(db.Integer, default=0)
     exercise_min = db.Column(db.Integer, default=0)
+    
+    # Notun fields gulo add kora holo:
+    screen_time_hrs = db.Column(db.Float, default=0.0)
+    caffeine_cups = db.Column(db.Integer, default=0)
+    energy_level = db.Column(db.Integer, default=3)     # 1-5 scale
+    
     notes = db.Column(db.Text, nullable=True)
 
+    __table_args__ = (db.UniqueConstraint("user_id", "log_date", name="uq_user_day"),)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "log_date": self.log_date.isoformat(),
+            "sleep_hours": self.sleep_hours,
+            "sleep_quality": self.sleep_quality,
+            "mood": self.mood,
+            "stress": self.stress,
+            "water_ml": self.water_ml,
+            "exercise_min": self.exercise_min,
+            "screen_time_hrs": self.screen_time_hrs,
+            "caffeine_cups": self.caffeine_cups,
+            "energy_level": self.energy_level,
+            "notes": self.notes,
+        }
     __table_args__ = (db.UniqueConstraint("user_id", "log_date", name="uq_user_day"),)
 
     def to_dict(self):

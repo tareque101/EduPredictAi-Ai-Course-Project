@@ -59,18 +59,11 @@ export const deleteHealthLog = async (id) => {
 };
 
 // ML
-const NUMERIC_KEYS = ['age', 'attendancePct', 'studyHours', 'previousCgpa', 'sleepHours', 'socialHours'];
-
-export const predictCgpa = async (form) => {
-  const payload = { ...form };
-  for (const key of NUMERIC_KEYS) {
-    payload[key] = Number(payload[key]);
-  }
-  return (await api.post('/predict', payload)).data;
-};
-
-export const sendChatMessage = async (message, history = []) =>
-  (await api.post('/chat', { message, history })).data;
+export const predictCgpa = async (payload) => (await api.post('/predict', payload)).data;
 export const fetchModelInfo = async () => (await api.get('/model-info')).data;
+
+// Chatbot: free models can be slow or fall back to the next model, so allow up to 90 seconds.
+export const sendChatMessage = async (message, history = []) =>
+  (await api.post('/chat', { message, history }, { timeout: 90000 })).data;
 
 export default api;

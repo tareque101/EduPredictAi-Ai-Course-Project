@@ -10,8 +10,11 @@ bp = Blueprint("health_logs", __name__, url_prefix="/api/health-logs")
 
 
 def _number(data, key, low, high, default):
+    val = data.get(key)
+    if val is None or str(val).strip() == "":
+        return float(default)
     try:
-        value = float(data.get(key, default))
+        value = float(val)
     except (TypeError, ValueError):
         raise ValueError(f"'{key}' must be a number.")
     if not (low <= value <= high):
@@ -45,6 +48,9 @@ def save_log():
             "stress": int(_number(data, "stress", 1, 5, 3)),
             "water_ml": int(_number(data, "water_ml", 0, 10000, 0)),
             "exercise_min": int(_number(data, "exercise_min", 0, 1440, 0)),
+            "screen_time_hrs": _number(data, "screen_time_hrs", 0, 24, 0),
+            "caffeine_cups": int(_number(data, "caffeine_cups", 0, 20, 0)),
+            "energy_level": int(_number(data, "energy_level", 1, 5, 3)),
         }
     except ValueError as exc:
         return jsonify(error=str(exc)), 400
